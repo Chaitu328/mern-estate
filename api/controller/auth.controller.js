@@ -71,3 +71,12 @@ export const googleController = async (req,res,next)=>{
         next(error)
     }
 }
+
+export const signOutController = async (req,res,next)=>{
+    try {
+        await res.clearCookie("access_token")
+        res.status(200).json({ message: "User has been signed out successfully!" })
+    } catch (error) {
+        next(error)
+    }
+}

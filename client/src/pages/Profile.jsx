@@ -7,7 +7,10 @@ import {
   updateUserFailure,
   deleteUserSet,
   deleteUserSuccess,
-  deleteUserFailure, 
+  deleteUserFailure,
+  signOutSet,
+  signOutSuccess,
+  signOutFailure,
 } from "../redux/User/userSlice";
 import { useDispatch } from "react-redux";
 
@@ -89,6 +92,21 @@ export default function Profile() {
       dispatch(deleteUserFailure(error.message));
     }
   }
+
+  const handleSignOut = async () => {
+    try {
+      dispatch(signOutSet());
+      const res = await fetch('/api/auth/signout')
+      const data = await res.json();
+      if(data.success === false) {
+        dispatch(signOutFailure(data.message));
+        return
+      }
+      dispatch(signOutSuccess(data));
+    } catch (error) {
+      dispatch(signOutFailure(error.message));
+    }
+  }
   return (
     <div className="p-3 max-w-lg mx-auto">
       <h1 className='text-3xl font-semibold text-center my-7'>Profile
@@ -143,7 +161,7 @@ export default function Profile() {
       </form>
       <div className="flex justify-between mt-4">
         <span onClick={handleDeleteUser} className="text-red-700 cursor-pointer ">Delete Account</span>
-        <span className="text-red-700 cursor-pointer ">Sign Out</span>
+        <span onClick={handleSignOut} className="text-red-700 cursor-pointer ">Sign Out</span>
       </div>
       <p className="text-red-700">{error ? error : ""}</p>
       <p className='text-green-700 mt-5'>
