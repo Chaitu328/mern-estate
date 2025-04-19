@@ -10,6 +10,7 @@ import fs from 'fs';
 import multer from 'multer';
 import cors from 'cors';
 import cookieParser from 'cookie-parser'
+import listingRouter from './routes/listing.route.js'
 
 dotenv.config()
 
@@ -27,6 +28,7 @@ mongoose.connect(process.env.MONGO_URI, {
     console.error('MongoDB connection error:', err)
 })
 const app = express()
+app.use(cors());
 
 app.use(express.json())
 app.use(cookieParser())
@@ -35,8 +37,8 @@ app.use('/api/user',useRouter)
 
 
 app.use('/api/auth',authRouter)
+app.use('/api/listing',listingRouter)
 
-app.use(cors());
 // Static folder to serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
