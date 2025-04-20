@@ -6,6 +6,7 @@ export default function CreateListing() {
     const [formData, setFormData] = useState({ imageUrls: [] });
     const [imageUploadError, setImageUploadError] = useState(false);
     const [uploading, setUploading] = useState(false);
+    console.log(formData)
     const handleImageSubmit =  () => {
         if (files.length > 0 && (files.length + formData.imageUrls.length) <= 6) {
           setUploading(true);
@@ -61,9 +62,9 @@ export default function CreateListing() {
             <div className='flex flex-col gap-4 flex-1'>
                 <input 
                  className='border p-3 rounded-lg bg-white' 
-                type="text" 
-                placeholder='Name' 
-                id="name"
+                type="text"
+                placeholder='Title' 
+                id="title"
                 maxLength='62' 
                 minLength='10' 
                 required />
