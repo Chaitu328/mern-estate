@@ -1,6 +1,59 @@
-import React from 'react'
+import { useState } from "react"
+import axios from "axios";
 
 export default function CreateListing() {
+    const [files, setFiles] = useState([]);
+    const [formData, setFormData] = useState({ imageUrls: [] });
+    const [imageUploadError, setImageUploadError] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const handleImageSubmit =  () => {
+        if (files.length > 0 && (files.length + formData.imageUrls.length) <= 6) {
+          setUploading(true);
+          setImageUploadError(false);
+    
+          const promises = Array.from(files).map((file) => {         
+              const formData = new FormData();
+              formData.append('file', file);
+              formData.append('upload_preset', 'ml_default');
+              return axios.post(
+                `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
+                formData,
+                {
+                    onUploadProgress: (progressEvent) => {
+                      const progress = Math.round(
+                        (progressEvent.loaded / progressEvent.total) *100
+                      );
+                      console.log(`Upload is ${progress}% done`);
+                    },
+                }
+            )
+            .then((res) => res.data.secure_url)
+            .catch((err) => {
+                throw err;
+            });
+        });
+    
+          Promise.all(promises)
+            .then((urls) => {
+              setFormData({ ...formData, imageUrls: formData.imageUrls.concat(urls) });
+              setImageUploadError(false);
+            })
+            .catch(() => {
+              setImageUploadError('Image upload failed (2 MB max per image)');
+            })
+            .finally(() => setUploading(false));
+        } else {
+          setImageUploadError('You can only upload 6 images per listing');
+          setUploading(false);
+        }
+      };
+    // console.log(files)
+    const handleRemoveImg =(index)=>{
+        setFormData(
+           { ...formData,
+            imageUrls: formData.imageUrls.filter((_,i)=>i!==index)}
+        )
+    }
   return (
     <main className='p-3 max-w-4xl mx-auto'>
         <h1 className='text-3xl font-bold text-center my-7'>Create a Listing</h1>
@@ -105,14 +158,29 @@ export default function CreateListing() {
                 <p className='font-semibold'>Images: <span className='font-normal text-gray-700'> The first image will be the cover (max 6)</span></p>
                 <div className='flex gap-4'>
                     <input 
+                    onChange={(e)=>setFiles(e.target.files)}
                     type="file" 
                     id='images'
                     className='border p-3 border-gray-300 rounded w-full'
                     accept='image/*'
                     multiple
                     />
-                    <button className='border border-green-700 p-3 rounded-lg uppercase hover:shadow-lg disabled:opacity-80 text-green-700' type="button">upload</button>
+                    <button disabled={uploading} onClick={handleImageSubmit} className='border border-green-700 p-3 rounded-lg uppercase hover:shadow-lg disabled:opacity-80 text-green-700' type="button">{uploading ? 'Uploading...' : 'Upload'}</button>
                 </div>
+                <p>{imageUploadError && imageUploadError}</p>
+
+                {
+                    formData.imageUrls.length > 0 && formData.imageUrls.map((url,index)=>(
+                        <div key={url} className="flex justify-between p-3 border item-center">
+                             <img src={url} alt="listing_image" className="w-40 h-40 object-cover rounded-lg"/>
+                             <button 
+                             type="button"
+                             onClick={()=>handleRemoveImg(index)}
+                             className="text-red-700 rounded-lg uppercase hover:opacity-95" >Delete</button>
+                        </div>    
+                    ))
+                }
+                
                 <button className='p-3 bg-slate-700 rounded-lg uppercase text-white hover:opacity-95 disabled:opacity-80'>create listing</button>
             </div>
         </form>
