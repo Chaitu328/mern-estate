@@ -146,7 +146,7 @@ export default function CreateListing() {
                 <input 
                 className='border p-3 rounded-lg bg-white' 
                 type="text" 
-                placeholder='Name' 
+                placeholder='Title' 
                 id="title"
                 maxLength='62' 
                 minLength='10' 
