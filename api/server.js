@@ -11,6 +11,7 @@ import multer from 'multer';
 import cors from 'cors';
 import cookieParser from 'cookie-parser'
 import listingRouter from './routes/listing.route.js'
+import path from 'path'
 
 dotenv.config()
 
@@ -18,6 +19,7 @@ const PORT = process.env.PORT || 3000;
 // __dirname workaround
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const __dirname_2 = path.resolve();
 
 mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
@@ -41,6 +43,8 @@ app.use('/api/listing',listingRouter)
 
 // Static folder to serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+
 
 // Ensure upload directory exists
 const uploadDir = path.join(__dirname, 'uploads');
@@ -98,6 +102,10 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
   }
 });
 
+app.use(express.static(path.join(__dirname_2,'/client/dist')))
+app.get('*',(req,res)=>{
+  res.sendFile(path.join(__dirname_2,'client','dist','index/html'))
+})
 
 app.use(errMiddleware)
 app.listen(PORT,()=>{
