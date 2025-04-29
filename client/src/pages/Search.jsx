@@ -15,6 +15,7 @@ export default function Search() {
     const navigate = useNavigate()
     const [loading,setLoading] = useState(false)
     const [listing,setListing] =useState(false)
+    const [showmoreListing,setShowmoreListing] = useState(false)
 
     useEffect(()=>{
         const urlParams = new URLSearchParams(location.search);
@@ -47,9 +48,15 @@ export default function Search() {
 
             const fetchListings = async()=>{
                 setLoading(true)
+                setShowmoreListing(false)
                 const searchQuery = urlParams.toString()
                 const res = await fetch(`/api/listing/get?${searchQuery}`)
                 const data = await res.json()
+                if(data.length >8){
+                    setShowmoreListing(true)
+                }else{
+                    setShowmoreListing(false)
+                }
                 setListing(data)
                 setLoading(false)
             }
@@ -93,7 +100,19 @@ export default function Search() {
         const serachQuery = urlParams.toString()
         navigate(`/search?${serachQuery}`)
     }
-    
+    const onShowMoreClick=async ()=>{
+        const numberOfListings = listing.length;
+        const startIndex = numberOfListings;
+        const urlParams = new URLSearchParams(location.search);
+        urlParams.set('startIndex', startIndex);
+        const searchQuery = urlParams.toString();
+        const res = await fetch(`/api/listing/get?${searchQuery}`);
+        const data = await res.json();
+        if (data.length < 9) {
+          setShowmoreListing(false);
+        }
+        setListing([...listing, ...data]);
+    }
   return (
     <div className='flex flex-col md:flex-row'>
         <div className='p-7 border-b-2 md:border-r-2 md:min-h-screen'>
@@ -197,6 +216,11 @@ export default function Search() {
                     <ListingItem key={listing} listing={listing}/>
                 ))
             }
+            {showmoreListing && (
+                <button onClick={onShowMoreClick} className='text-center w-full text-green-700 hover:underline cursor-pointer'>
+                    Show More
+                </button>
+            )}
             </div>
         </div>
         
