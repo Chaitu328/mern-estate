@@ -209,7 +209,7 @@ export default function Search() {
             {!loading && listing.length === 0 && (
             <p className='text-xl mt-28 text-slate-700'>No listing found!</p>)}
 
-            {loading && <p className='text-xl text-slate-700 text-center mt-28 w-full'>{loading?'Loading':''}</p>}
+            {loading && <p className='text-xl text-slate-700 text-center mt-28 w-full'>{loading?'Loading...':''}</p>}
 
             {!loading && listing && 
                 listing.map((listing)=>(
