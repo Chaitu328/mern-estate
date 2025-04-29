@@ -11,7 +11,6 @@ import multer from 'multer';
 import cors from 'cors';
 import cookieParser from 'cookie-parser'
 import listingRouter from './routes/listing.route.js'
-import path from 'path'
 
 dotenv.config()
 
@@ -19,7 +18,7 @@ const PORT = process.env.PORT || 3000;
 // __dirname workaround
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const __dirname_2 = path.resolve();
+const __direname2 = path.resolve()
 
 mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
@@ -29,27 +28,21 @@ mongoose.connect(process.env.MONGO_URI, {
 }).catch(err => {
     console.error('MongoDB connection error:', err)
 })
+
 const app = express()
 app.use(cors());
-
 app.use(express.json())
 app.use(cookieParser())
 
-app.use('/api/user',useRouter)
-
-
-app.use('/api/auth',authRouter)
-app.use('/api/listing',listingRouter)
-
-// Static folder to serve uploaded files
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-
+// API routes
+app.use('/api/user', useRouter)
+app.use('/api/auth', authRouter)
+app.use('/api/listing', listingRouter)
 
 // Ensure upload directory exists
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
+  fs.mkdirSync(uploadDir, { recursive: true });
 }
 
 const storage = multer.diskStorage({
@@ -57,27 +50,21 @@ const storage = multer.diskStorage({
       cb(null, 'uploads/');
     },
     filename: (req, file, cb) => {
-      // Create a unique filename by appending a timestamp if file exists
       const uniqueName = `${Date.now()}-${file.originalname}`;
-  
-      // Check if file already exists, if yes, append a random string or timestamp
       const filePath = path.join(__dirname, 'uploads', uniqueName);
       
       fs.access(filePath, fs.constants.F_OK, (err) => {
         if (err) {
-          // File doesn't exist, safe to use the unique name
           cb(null, uniqueName);
         } else {
-          // File exists, generate a new unique name
           const newUniqueName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}-${file.originalname}`;
           cb(null, newUniqueName);
         }
       });
     }
-  });
-  
+});
 
-  const upload = multer({
+const upload = multer({
     storage,
     limits: { fileSize: 2 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
@@ -88,6 +75,7 @@ const storage = multer.diskStorage({
       }
     },
 });
+
 app.post('/api/upload', upload.single('image'), (req, res) => {
   try {
     const file = req.file;
@@ -95,19 +83,27 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    const fileUrl = `http://localhost:${PORT}/uploads/${file.filename}`;
+    const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
     res.status(200).json({ url: fileUrl });
   } catch (err) {
     res.status(500).json({ error: 'Something went wrong during upload' });
   }
 });
 
-app.use(express.static(path.join(__dirname_2,'../client/dist')))
-app.get('*',(req,res)=>{
-  res.sendFile(path.join(__dirname_2,'../client','dist','index.html'))
-})
+// Static folder to serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-app.use(errMiddleware)
-app.listen(PORT,()=>{
-    console.log("Server is running on Port 3000")
-})
+// Serve static files from client dist directory
+app.use(express.static(path.join(__direname2, 'client', 'dist')));
+
+// This should be the LAST route
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__direname2, 'client', 'dist', 'index.html'));
+});
+
+// Error middleware
+app.use(errMiddleware);
+
+app.listen(PORT, () => {
+    console.log(`Server is running on Port ${PORT}`);
+});
