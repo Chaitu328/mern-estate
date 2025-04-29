@@ -102,9 +102,9 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
   }
 });
 
-app.use(express.static(path.join(__dirname_2,'/client/dist')))
+app.use(express.static(path.join(__dirname_2,'../client/dist')))
 app.get('*',(req,res)=>{
-  res.sendFile(path.join(__dirname_2,'client','dist','index/html'))
+  res.sendFile(path.join(__dirname_2,'../client','dist','index.html'))
 })
 
 app.use(errMiddleware)
